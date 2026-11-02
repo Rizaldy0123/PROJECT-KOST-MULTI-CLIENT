@@ -6,20 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
+            $table->string('nama_tenant', 100);
+            $table->string('domain', 100)->nullable();
+            $table->string('alamat', 255);
+            $table->string('kontak', 50);
+            $table->tinyInteger('aktif')->default(1);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('clients');
