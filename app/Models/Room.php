@@ -14,7 +14,7 @@ class Room extends Model
         'property_id',
         'tipe_kamar_id',
         'nomor_kamar',
-        'harga',
+        'harga', // Mengikuti nama kolom di database
         'status',
         'foto',
     ];

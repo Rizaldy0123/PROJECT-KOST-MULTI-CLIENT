@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\MaintenanceTicket;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     public function adminIndex()
     {
-        // Karena Trait BelongsToClient sudah terpasang, query berikut otomatis terfilter berdasarkan client_id aktif
-
         // 1. Ringkasan Properti & Kamar
         $totalProperties = Property::count();
         $totalRooms = Room::whereHas('property')->count();
@@ -22,25 +20,27 @@ class DashboardController extends Controller
         $kamarTersedia = Room::whereHas('property')->where('status', 'tersedia')->count();
 
         // 2. Ringkasan Kontrak & Keuangan
-        $kontrakAktif = Contract::where('status', 'aktif')->count();
-        
-        $pendapatanBulanIni = Invoice::where('status', 'lunas')
-            ->whereYear('updated_at', now()->year)
-            ->whereMonth('updated_at', now()->month)
+        $kontrakAktif = Contract::whereHas('room.property')->where('status', 'aktif')->count();
+
+        $pendapatanBulanIni = Invoice::whereHas('contract.room.property')
+            ->where('jenis_tagihan', 'sewa')
+            ->where('status', 'lunas')
+            ->whereMonth('created_at', now()->month)
             ->sum('jumlah');
 
-        $tagihanBelumBayar = Invoice::where('status', 'belum_bayar')->sum('jumlah');
+        // 3. Tiket Perbaikan & Tagihan Terbaru
+        $tiketAktif = MaintenanceTicket::whereHas('room.property')
+            ->whereIn('status', ['diajukan', 'diproses'])
+            ->count();
 
-        // 3. Ringkasan Tiket Perbaikan Aktif
-        $tiketAktif = MaintenanceTicket::whereIn('status', ['diajukan', 'diproses'])->count();
-
-        // 4. Data Widget Aktivitas Terbaru
-        $tiketTerbaru = MaintenanceTicket::with(['room', 'pelapor.user'])
+        // Menggunakan kolom 'tanggal_lapor' secara eksplisit
+        $tiketTerbaru = MaintenanceTicket::whereHas('room.property')
+            ->with('room')
             ->latest('tanggal_lapor')
             ->take(5)
             ->get();
 
-        $tagihanTerbaru = Invoice::with(['contract.room', 'contract.clientUser.user'])
+        $tagihanTerbaru = Invoice::whereHas('contract.room.property')
             ->latest()
             ->take(5)
             ->get();
@@ -52,7 +52,6 @@ class DashboardController extends Controller
             'kamarTersedia',
             'kontrakAktif',
             'pendapatanBulanIni',
-            'tagihanBelumBayar',
             'tiketAktif',
             'tiketTerbaru',
             'tagihanTerbaru'

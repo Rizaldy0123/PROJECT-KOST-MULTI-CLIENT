@@ -5,20 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Traits\BelongsToClient; // 1. Import Trait
 
 class Contract extends Model
 {
-    use BelongsToClient; // 2. Terapkan Trait
-
     protected $table = 'contracts';
 
     protected $fillable = [
         'room_id',
-        'client_id',
-        'client_user_id',
-        'start_date',
-        'end_date',
+        'user_id',
+        'tanggal_mulai',
+        'tanggal_selesai',
+        'harga_sepakat',
         'status',
     ];
 
@@ -27,14 +24,9 @@ class Contract extends Model
         return $this->belongsTo(Room::class, 'room_id');
     }
 
-    public function client(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Client::class, 'client_id');
-    }
-
-    public function clientUser(): BelongsTo
-    {
-        return $this->belongsTo(ClientUser::class, 'client_user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function invoices(): HasMany

@@ -3,29 +3,38 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PropertyController; // 1. Import PropertyController
+use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\RoomTypeController;
+use App\Http\Controllers\RoomController;
 
-// Halaman utama otomatis diarahkan ke halaman login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Rute untuk pengguna yang BELUM login (Guest)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 });
 
-// Rute untuk pengguna yang SUDAH login (Auth)
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // Dashboard Pengelola Kost (Admin Client)
     Route::get('/admin/dashboard', [DashboardController::class, 'adminIndex'])->name('admin.dashboard');
 
-    // 2. Rute CRUD Properti Kost (Admin Client)
+    // CRUD Properti Kost
     Route::resource('admin/properties', PropertyController::class, [
         'names' => 'admin.properties'
+    ]);
+
+    // CRUD Tipe Kamar
+    Route::resource('admin/room-types', RoomTypeController::class, [
+        'names' => 'admin.room-types'
+    ]);
+
+    // CRUD Unit Kamar
+    Route::resource('admin/rooms', RoomController::class, [
+        'names' => 'admin.rooms'
     ]);
 
     // Dashboard Penghuni
@@ -33,8 +42,6 @@ Route::middleware('auth')->group(function () {
         return 'Selamat Datang di Dashboard Penghuni!';
     })->name('penghuni.dashboard');
 
-    // Dashboard Utama / Super Admin
-    Route::get('/dashboard', function () {
-        return 'Selamat Datang di Dashboard Platform Utama!';
-    })->name('dashboard');
+    // Mengarahkan /dashboard utama ke DashboardController
+    Route::get('/dashboard', [DashboardController::class, 'adminIndex'])->name('dashboard');
 });

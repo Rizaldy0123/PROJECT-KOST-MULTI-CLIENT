@@ -25,8 +25,17 @@
                         Data Properti
                     </a>
 
+                    <a href="{{ route('admin.room-types.index') }}" 
+                       class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('admin.room-types.*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50' }}">
+                        Tipe Kamar
+                    </a>
+
+                    <a href="{{ route('admin.rooms.index') }}" 
+                       class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('admin.rooms.*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50' }}">
+                        Data Kamar
+                    </a>
+
                     <!-- Placeholder Navigasi Modul Selanjutnya -->
-                    <span class="px-3 py-2 text-sm font-medium text-gray-300 cursor-not-allowed">Kamar</span>
                     <span class="px-3 py-2 text-sm font-medium text-gray-300 cursor-not-allowed">Kontrak</span>
                     <span class="px-3 py-2 text-sm font-medium text-gray-300 cursor-not-allowed">Tagihan</span>
                 </nav>
