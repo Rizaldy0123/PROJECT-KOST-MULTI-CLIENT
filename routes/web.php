@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\ContractController; // Tambahkan import ContractController
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -35,6 +36,11 @@ Route::middleware('auth')->group(function () {
     // CRUD Unit Kamar
     Route::resource('admin/rooms', RoomController::class, [
         'names' => 'admin.rooms'
+    ]);
+
+    // CRUD Kontrak Sewa
+    Route::resource('admin/contracts', ContractController::class, [
+        'names' => 'admin.contracts'
     ]);
 
     // Dashboard Penghuni

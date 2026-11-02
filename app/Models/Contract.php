@@ -12,10 +12,10 @@ class Contract extends Model
 
     protected $fillable = [
         'room_id',
-        'user_id',
-        'tanggal_mulai',
-        'tanggal_selesai',
-        'harga_sepakat',
+        'client_id',
+        'client_user_id',
+        'start_date',
+        'end_date',
         'status',
     ];
 
@@ -26,7 +26,7 @@ class Contract extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'client_user_id');
     }
 
     public function invoices(): HasMany
