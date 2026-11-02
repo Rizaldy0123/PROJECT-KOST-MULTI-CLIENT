@@ -10,7 +10,14 @@
     <!-- Navbar Header -->
     <header class="bg-white shadow">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-gray-800">KostWangi Multi Client - Admin Panel</h1>
+            <div class="flex items-center space-x-6">
+                <h1 class="text-xl font-bold text-gray-800">KostWangi Multi Client - Admin Panel</h1>
+                <!-- Menu Navigasi -->
+                <nav class="hidden md:flex space-x-4">
+                    <a href="{{ route('admin.dashboard') }}" class="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">Dashboard</a>
+                    <a href="{{ route('admin.properties.index') }}" class="text-gray-600 hover:text-blue-600 font-medium pb-1">Data Properti</a>
+                </nav>
+            </div>
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600 transition">Logout</button>
@@ -23,10 +30,14 @@
 
         <!-- Cards Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
-                <p class="text-sm font-medium text-gray-500">Total Properti Kost</p>
+            <!-- Card Properti dengan Link -->
+            <a href="{{ route('admin.properties.index') }}" class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition block group">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-gray-500 group-hover:text-blue-600">Total Properti Kost</p>
+                    <span class="text-xs text-blue-600 group-hover:underline">Kelola &rarr;</span>
+                </div>
                 <p class="text-3xl font-bold text-gray-800 mt-2">{{ $totalProperties }}</p>
-            </div>
+            </a>
 
             <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
                 <p class="text-sm font-medium text-gray-500">Status Kamar</p>
