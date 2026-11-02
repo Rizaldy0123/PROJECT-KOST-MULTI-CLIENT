@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\DashboardController; // Import DashboardController
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PropertyController; // 1. Import PropertyController
 
 // Halaman utama otomatis diarahkan ke halaman login
 Route::get('/', function () {
@@ -21,6 +22,11 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard Pengelola Kost (Admin Client)
     Route::get('/admin/dashboard', [DashboardController::class, 'adminIndex'])->name('admin.dashboard');
+
+    // 2. Rute CRUD Properti Kost (Admin Client)
+    Route::resource('admin/properties', PropertyController::class, [
+        'names' => 'admin.properties'
+    ]);
 
     // Dashboard Penghuni
     Route::get('/penghuni/dashboard', function () {
