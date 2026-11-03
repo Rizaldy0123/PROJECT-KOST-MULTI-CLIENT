@@ -35,14 +35,16 @@
                         Data Kamar
                     </a>
 
-                    <!-- Navigasi Kontrak yang Telah Diaktifkan -->
                     <a href="{{ route('admin.contracts.index') }}" 
                        class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('admin.contracts.*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50' }}">
                         Kontrak
                     </a>
 
-                    <!-- Placeholder Navigasi Modul Selanjutnya -->
-                    <span class="px-3 py-2 text-sm font-medium text-gray-300 cursor-not-allowed">Tagihan</span>
+                    <!-- Navigasi Tagihan yang Telah Diaktifkan -->
+                    <a href="{{ route('admin.invoices.index') }}" 
+                       class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('admin.invoices.*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50' }}">
+                        Tagihan
+                    </a>
                 </nav>
             </div>
 
