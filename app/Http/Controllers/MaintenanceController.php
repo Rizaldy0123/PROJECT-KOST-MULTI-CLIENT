@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MaintenanceTicket;
 use App\Models\Room;
-use App\Models\User;
+use App\Models\ClientUser; // Ubah dari User ke ClientUser
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -22,7 +22,8 @@ class MaintenanceController extends Controller
     public function create()
     {
         $rooms = Room::with('property')->get();
-        $users = User::all();
+        // Ambil data dari client_users beserta relasi user-nya
+        $users = ClientUser::with('user')->get();
 
         return view('admin.maintenance.create', compact('rooms', 'users'));
     }
@@ -31,7 +32,7 @@ class MaintenanceController extends Controller
     {
         $validated = $request->validate([
             'room_id'    => 'required|exists:rooms,id',
-            'pelapor_id' => 'required|exists:users,id',
+            'pelapor_id' => 'required|exists:client_users,id', // Validasi ke tabel client_users
             'judul'      => 'required|string|max:100',
             'deskripsi'  => 'required|string|max:500',
             'status'     => 'required|in:diajukan,diproses,selesai,ditolak',
@@ -53,7 +54,7 @@ class MaintenanceController extends Controller
     public function edit(MaintenanceTicket $maintenance)
     {
         $rooms = Room::with('property')->get();
-        $users = User::all();
+        $users = ClientUser::with('user')->get();
 
         return view('admin.maintenance.edit', compact('maintenance', 'rooms', 'users'));
     }
@@ -62,7 +63,7 @@ class MaintenanceController extends Controller
     {
         $validated = $request->validate([
             'room_id'    => 'required|exists:rooms,id',
-            'pelapor_id' => 'required|exists:users,id',
+            'pelapor_id' => 'required|exists:client_users,id', // Validasi ke tabel client_users
             'judul'      => 'required|string|max:100',
             'deskripsi'  => 'required|string|max:500',
             'status'     => 'required|in:diajukan,diproses,selesai,ditolak',
@@ -70,8 +71,6 @@ class MaintenanceController extends Controller
 
         $room = Room::with('property')->findOrFail($validated['room_id']);
         $validated['client_id'] = $room->property->client_id ?? 1;
-        
-        // Kolom tanggal_lapor tidak perlu diubah saat update status
 
         $maintenance->update($validated);
 

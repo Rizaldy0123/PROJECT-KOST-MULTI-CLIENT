@@ -29,7 +29,7 @@
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-4 text-xs whitespace-nowrap">{{ \Carbon\Carbon::parse($ticket->tanggal_lapor)->format('d/m/Y H:i') }}</td>
                     <td class="p-4">
-                        <span class="font-bold text-gray-800">{{ $ticket->pelapor->name ?? 'Tidak diketahui' }}</span><br>
+                        <span class="font-bold text-gray-800">{{ $ticket->pelapor->user->name ?? $ticket->pelapor->user->nama ?? 'Tidak diketahui' }}</span><br>
                         <span class="text-xs text-gray-400">Kamar {{ $ticket->room->nomor_kamar ?? '-' }} - {{ $ticket->room->property->nama_properti ?? '' }}</span>
                     </td>
                     <td class="p-4">

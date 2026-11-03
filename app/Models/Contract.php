@@ -26,7 +26,8 @@ class Contract extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'client_user_id');
+        // Ubah ke ClientUser::class karena foreign key client_user_id merujuk ke tabel client_users
+        return $this->belongsTo(ClientUser::class, 'client_user_id');
     }
 
     public function invoices(): HasMany

@@ -28,7 +28,7 @@
         <tbody>
             @forelse($contracts as $contract)
                 <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 font-bold text-gray-800">{{ $contract->user->name ?? '-' }}</td>
+                    <td class="p-4 font-bold text-gray-800">{{ $contract->user->user->name ?? $contract->user->user->nama ?? '-' }}</td>
                     <td class="p-4">
                         Kamar {{ $contract->room->nomor_kamar ?? '-' }} <br>
                         <span class="text-xs text-gray-400">{{ $contract->room->property->nama_properti ?? '-' }}</span>

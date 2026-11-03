@@ -24,7 +24,9 @@
                 <select name="pelapor_id" required class="w-full mt-1 p-2 border rounded-md">
                     <option value="">-- Pilih Pelapor --</option>
                     @foreach($users as $user)
-                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                        <option value="{{ $user->id }}">
+                            {{ $user->user->name ?? $user->user->nama ?? 'Tanpa Nama' }} ({{ $user->user->email ?? '-' }})
+                        </option>
                     @endforeach
                 </select>
             </div>

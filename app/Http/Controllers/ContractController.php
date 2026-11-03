@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\Room;
-use App\Models\User;
+use App\Models\ClientUser; // Ubah dari User ke ClientUser
 use Illuminate\Http\Request;
 
 class ContractController extends Controller
@@ -12,7 +12,7 @@ class ContractController extends Controller
     public function index()
     {
         $contracts = Contract::whereHas('room.property')
-            ->with(['room.property', 'user'])
+            ->with(['room.property', 'user.user']) // Sesuaikan relasi ke clientUser
             ->latest()
             ->get();
 
@@ -22,7 +22,8 @@ class ContractController extends Controller
     public function create()
     {
         $rooms = Room::where('status', 'tersedia')->with('property')->get();
-        $users = User::all();
+        // Ambil data dari client_users beserta data user-nya
+        $users = ClientUser::with('user')->get();
 
         return view('admin.contracts.create', compact('rooms', 'users'));
     }
@@ -31,7 +32,7 @@ class ContractController extends Controller
     {
         $validated = $request->validate([
             'room_id'        => 'required|exists:rooms,id',
-            'client_user_id' => 'required|exists:users,id',
+            'client_user_id' => 'required|exists:client_users,id', // Validasi ke tabel client_users
             'start_date'     => 'required|date',
             'end_date'       => 'required|date|after_or_equal:start_date',
             'status'         => 'required|in:aktif,selesai,dibatalkan',
@@ -54,7 +55,7 @@ class ContractController extends Controller
     public function edit(Contract $contract)
     {
         $rooms = Room::with('property')->get();
-        $users = User::all();
+        $users = ClientUser::with('user')->get();
 
         return view('admin.contracts.edit', compact('contract', 'rooms', 'users'));
     }
@@ -63,7 +64,7 @@ class ContractController extends Controller
     {
         $validated = $request->validate([
             'room_id'        => 'required|exists:rooms,id',
-            'client_user_id' => 'required|exists:users,id',
+            'client_user_id' => 'required|exists:client_users,id', // Validasi ke tabel client_users
             'start_date'     => 'required|date',
             'end_date'       => 'required|date|after_or_equal:start_date',
             'status'         => 'required|in:aktif,selesai,dibatalkan',

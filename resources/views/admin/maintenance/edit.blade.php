@@ -26,7 +26,7 @@
                 <select name="pelapor_id" required class="w-full mt-1 p-2 border rounded-md">
                     @foreach($users as $user)
                         <option value="{{ $user->id }}" {{ ($maintenance?->pelapor_id == $user->id) ? 'selected' : '' }}>
-                            {{ $user->name }}
+                            {{ $user->user->name ?? $user->user->nama ?? 'Tanpa Nama' }} ({{ $user->user->email ?? '-' }})
                         </option>
                     @endforeach
                 </select>

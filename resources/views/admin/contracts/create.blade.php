@@ -14,8 +14,10 @@
                 <label class="block text-sm font-medium text-gray-700">Pilih Penghuni</label>
                 <select name="client_user_id" required class="w-full mt-1 p-2 border rounded-md">
                     <option value="">-- Pilih Penghuni --</option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                    @foreach($users as $item)
+                        <option value="{{ $item->id }}">
+                            {{ $item->user->name ?? $item->user->nama ?? 'Tanpa Nama' }} ({{ $item->user->email ?? '-' }})
+                        </option>
                     @endforeach
                 </select>
             </div>
