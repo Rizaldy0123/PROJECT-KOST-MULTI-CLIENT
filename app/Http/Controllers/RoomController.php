@@ -32,7 +32,8 @@ class RoomController extends Controller
             'property_id'   => 'required|exists:properties,id',
             'tipe_kamar_id' => 'required|exists:room_types,id',
             'nomor_kamar'   => 'required|string|max:10',
-            'harga'         => 'required|numeric|min:0',
+            'lantai'        => 'required|integer|min:1',
+            'harga'         => 'required|numeric|min:0', // Sesuaikan dengan kolom database Anda ('harga')
             'status'        => 'required|in:tersedia,terisi,perbaikan',
         ]);
 
@@ -55,7 +56,8 @@ class RoomController extends Controller
             'property_id'   => 'required|exists:properties,id',
             'tipe_kamar_id' => 'required|exists:room_types,id',
             'nomor_kamar'   => 'required|string|max:10',
-            'harga'         => 'required|numeric|min:0',
+            'lantai'        => 'required|integer|min:1',
+            'harga'         => 'required|numeric|min:0', // Sesuaikan dengan kolom database Anda ('harga')
             'status'        => 'required|in:tersedia,terisi,perbaikan',
         ]);
 

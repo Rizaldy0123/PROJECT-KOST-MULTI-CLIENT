@@ -13,12 +13,11 @@ class RoomType extends Model
 
     protected $table = 'room_types';
 
-    protected $fillable = [
-        'client_id',
+        protected $fillable = [
         'nama_tipe',
-        'deskripsi',
         'harga_default',
         'kapasitas',
+        'deskripsi',
     ];
 
     public function client(): BelongsTo

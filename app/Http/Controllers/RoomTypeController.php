@@ -21,7 +21,7 @@ class RoomTypeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_tipe'     => 'required|string|max:50',
+            'nama_tipe'     => 'required|string|max:100',
             'harga_default' => 'required|numeric|min:0',
             'kapasitas'     => 'required|integer|min:1',
             'deskripsi'     => 'nullable|string',

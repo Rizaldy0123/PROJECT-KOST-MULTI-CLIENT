@@ -7,7 +7,8 @@ use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ContractController;
-use App\Http\Controllers\InvoiceController; // Import InvoiceController
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MaintenanceController; // Tambahkan import MaintenanceController
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -47,6 +48,13 @@ Route::middleware('auth')->group(function () {
     // CRUD Tagihan
     Route::resource('admin/invoices', InvoiceController::class, [
         'names' => 'admin.invoices'
+    ]);
+
+    // CRUD Tiket Perbaikan
+    Route::resource('admin/maintenance', MaintenanceController::class, [
+        'names' => 'admin.maintenance'
+    ])->parameters([
+        'maintenance' => 'maintenance' // Mencegah parameter URL menjadi jamak secara default
     ]);
 
     // Dashboard Penghuni
