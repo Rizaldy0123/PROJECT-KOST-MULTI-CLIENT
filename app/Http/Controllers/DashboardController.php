@@ -23,9 +23,13 @@ class DashboardController extends Controller
         $kontrakAktif = Contract::whereHas('room.property')->where('status', 'aktif')->count();
 
         $pendapatanBulanIni = Invoice::whereHas('contract.room.property')
-            ->where('jenis_tagihan', 'sewa')
             ->where('status', 'lunas')
             ->whereMonth('created_at', now()->month)
+            ->sum('jumlah');
+
+        // Tambahan: Total Tagihan Belum Lunas (Piutang)
+        $totalPiutang = Invoice::whereHas('contract.room.property')
+            ->where('status', 'belum_lunas')
             ->sum('jumlah');
 
         // 3. Tiket Perbaikan & Tagihan Terbaru
@@ -33,7 +37,6 @@ class DashboardController extends Controller
             ->whereIn('status', ['diajukan', 'diproses'])
             ->count();
 
-        // Menggunakan kolom 'tanggal_lapor' secara eksplisit
         $tiketTerbaru = MaintenanceTicket::whereHas('room.property')
             ->with('room')
             ->latest('tanggal_lapor')
@@ -52,6 +55,7 @@ class DashboardController extends Controller
             'kamarTersedia',
             'kontrakAktif',
             'pendapatanBulanIni',
+            'totalPiutang',
             'tiketAktif',
             'tiketTerbaru',
             'tagihanTerbaru'

@@ -45,6 +45,12 @@
                         Tagihan
                     </a>
 
+                    <!-- Menu Pembayaran Ditambahkan di Sini -->
+                    <a href="{{ route('admin.payments.index') }}" 
+                       class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('admin.payments.*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50' }}">
+                        Pembayaran
+                    </a>
+
                     <a href="{{ route('admin.maintenance.index') }}" 
                        class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('admin.maintenance.*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50' }}">
                         Perbaikan

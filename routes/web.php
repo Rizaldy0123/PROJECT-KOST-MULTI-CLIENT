@@ -1,67 +1,76 @@
-<?php
+    <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PropertyController;
-use App\Http\Controllers\RoomTypeController;
-use App\Http\Controllers\RoomController;
-use App\Http\Controllers\ContractController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\MaintenanceController; // Tambahkan import MaintenanceController
+    use Illuminate\Support\Facades\Route;
+    use App\Http\Controllers\Auth\LoginController;
+    use App\Http\Controllers\DashboardController;
+    use App\Http\Controllers\PropertyController;
+    use App\Http\Controllers\RoomTypeController;
+    use App\Http\Controllers\RoomController;
+    use App\Http\Controllers\ContractController;
+    use App\Http\Controllers\InvoiceController;
+    use App\Http\Controllers\MaintenanceController;
+    use App\Http\Controllers\PaymentController; // Tambahkan import PaymentController
 
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+    Route::get('/', function () {
+        return redirect()->route('login');
+    });
 
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
-});
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [LoginController::class, 'login']);
+    });
 
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::middleware('auth')->group(function () {
+        Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    // Dashboard Pengelola Kost (Admin Client)
-    Route::get('/admin/dashboard', [DashboardController::class, 'adminIndex'])->name('admin.dashboard');
+        // Dashboard Pengelola Kost (Admin Client)
+        Route::get('/admin/dashboard', [DashboardController::class, 'adminIndex'])->name('admin.dashboard');
 
-    // CRUD Properti Kost
-    Route::resource('admin/properties', PropertyController::class, [
-        'names' => 'admin.properties'
-    ]);
+        // CRUD Properti Kost
+        Route::resource('admin/properties', PropertyController::class, [
+            'names' => 'admin.properties'
+        ]);
 
-    // CRUD Tipe Kamar
-    Route::resource('admin/room-types', RoomTypeController::class, [
-        'names' => 'admin.room-types'
-    ]);
+        // CRUD Tipe Kamar
+        Route::resource('admin/room-types', RoomTypeController::class, [
+            'names' => 'admin.room-types'
+        ]);
 
-    // CRUD Unit Kamar
-    Route::resource('admin/rooms', RoomController::class, [
-        'names' => 'admin.rooms'
-    ]);
+        // CRUD Unit Kamar
+        Route::resource('admin/rooms', RoomController::class, [
+            'names' => 'admin.rooms'
+        ]);
 
-    // CRUD Kontrak Sewa
-    Route::resource('admin/contracts', ContractController::class, [
-        'names' => 'admin.contracts'
-    ]);
+        // CRUD Kontrak Sewa
+        Route::resource('admin/contracts', ContractController::class, [
+            'names' => 'admin.contracts'
+        ]);
 
-    // CRUD Tagihan
-    Route::resource('admin/invoices', InvoiceController::class, [
-        'names' => 'admin.invoices'
-    ]);
+        // CRUD Tagihan
+        Route::resource('admin/invoices', InvoiceController::class, [
+            'names' => 'admin.invoices'
+        ]);
 
-    // CRUD Tiket Perbaikan
-    Route::resource('admin/maintenance', MaintenanceController::class, [
-        'names' => 'admin.maintenance'
-    ])->parameters([
-        'maintenance' => 'maintenance' // Mencegah parameter URL menjadi jamak secara default
-    ]);
+        // CRUD Pembayaran
+        Route::resource('admin/payments', PaymentController::class, [
+            'names' => 'admin.payments'
+        ])->only(['index', 'create', 'store', 'destroy']);
 
-    // Dashboard Penghuni
-    Route::get('/penghuni/dashboard', function () {
-        return 'Selamat Datang di Dashboard Penghuni!';
-    })->name('penghuni.dashboard');
+        // Rute Kuitansi Pembayaran
+        Route::get('admin/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('admin.payments.receipt');
 
-    // Mengarahkan /dashboard utama ke DashboardController
-    Route::get('/dashboard', [DashboardController::class, 'adminIndex'])->name('dashboard');
-});
+        // CRUD Tiket Perbaikan
+        Route::resource('admin/maintenance', MaintenanceController::class, [
+            'names' => 'admin.maintenance'
+        ])->parameters([
+            'maintenance' => 'maintenance'
+        ]);
+
+        // Dashboard Penghuni
+        Route::get('/penghuni/dashboard', function () {
+            return 'Selamat Datang di Dashboard Penghuni!';
+        })->name('penghuni.dashboard');
+
+        // Mengarahkan /dashboard utama ke DashboardController
+        Route::get('/dashboard', [DashboardController::class, 'adminIndex'])->name('dashboard');
+    });

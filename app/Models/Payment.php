@@ -9,25 +9,24 @@ class Payment extends Model
 {
     protected $table = 'payments';
 
-    public $timestamps = false;
-
     protected $fillable = [
+        'client_id',
         'invoice_id',
-        'client_user_id',
-        'metode_pembayaran',
-        'jumlah',
-        'bukti_pembayaran',
-        'status',
+        'nomor_pembayaran',
         'tanggal_bayar',
+        'jumlah_bayar',
+        'metode_pembayaran',
+        'bukti_transfer',
+        'catatan',
     ];
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'client_id');
+    }
 
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class, 'invoice_id');
-    }
-
-    public function clientUser(): BelongsTo
-    {
-        return $this->belongsTo(ClientUser::class, 'client_user_id');
     }
 }
