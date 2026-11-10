@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('bukti_pembayaran', 255)->nullable();
             $table->enum('status', ['pending', 'diverifikasi', 'ditolak'])->default('pending');
             $table->timestamp('tanggal_bayar')->useCurrent();
+            $table->timestamps(); // <-- Tambahkan baris ini
         });
     }
 
