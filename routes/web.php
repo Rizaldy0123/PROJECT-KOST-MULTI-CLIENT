@@ -9,6 +9,7 @@
     use App\Http\Controllers\ContractController;
     use App\Http\Controllers\InvoiceController;
     use App\Http\Controllers\MaintenanceController;
+    use App\Http\Controllers\PenghuniDashboardController;
     use App\Http\Controllers\PaymentController; // Tambahkan import PaymentController
 
     Route::get('/', function () {
@@ -67,9 +68,12 @@
         ]);
 
         // Dashboard Penghuni
-        Route::get('/penghuni/dashboard', function () {
-            return 'Selamat Datang di Dashboard Penghuni!';
-        })->name('penghuni.dashboard');
+        Route::get('/penghuni/dashboard', [PenghuniDashboardController::class, 'index'])
+        ->name('penghuni.dashboard');
+        
+        //Pengajuan Keluhan Penghuni
+        Route::post('/penghuni/keluhan', [PenghuniDashboardController::class, 'store'])
+        ->name('penghuni.keluhan.store');
 
         // Mengarahkan /dashboard utama ke DashboardController
         Route::get('/dashboard', [DashboardController::class, 'adminIndex'])->name('dashboard');
