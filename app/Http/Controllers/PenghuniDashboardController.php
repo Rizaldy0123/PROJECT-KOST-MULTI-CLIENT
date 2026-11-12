@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Models\MaintenanceTicket;
 use App\Models\ClientUser;
 use App\Models\Notification;
+use App\Models\User; // <-- Ditambahkan untuk menghindari error/peringatan garis merah di VS Code
 
 class PenghuniDashboardController extends Controller
 {
@@ -85,4 +87,3 @@ class PenghuniDashboardController extends Controller
             ->with('success', 'Keluhan berhasil diajukan!');
     }
 }
-

@@ -18,7 +18,7 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email'    => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -62,16 +62,16 @@ class LoginController extends Controller
                 // Set konteks client_id di session untuk isolasi data
                 session(['active_client_id' => $clientUser->client_id]);
 
-                // Redirect berdasarkan role client
+                // Redirect langsung berdasarkan role client (tanpa intended agar tidak tersesat)
                 if (($clientUser->role ?? null) === 'admin_client') {
-                    return redirect()->intended('/admin/dashboard');
+                    return redirect('/admin/dashboard');
                 } elseif (($clientUser->role ?? null) === 'penghuni') {
-                    return redirect()->intended('/penghuni/dashboard');
+                    return redirect()->route('penghuni.dashboard');
                 }
             }
 
             // Redirect default jika user adalah Super Admin Platform
-            return redirect()->intended('/dashboard');
+            return redirect('/dashboard');
         }
 
         return back()->withErrors([
