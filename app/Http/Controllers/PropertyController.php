@@ -9,8 +9,8 @@ class PropertyController extends Controller
 {
     public function index()
     {
-        // Trait BelongsToClient otomatis menyaring properti milik client_id yang sedang login
         $properties = Property::withCount('rooms')->latest()->get();
+
         return view('admin.properties.index', compact('properties'));
     }
 
@@ -23,12 +23,22 @@ class PropertyController extends Controller
     {
         $validated = $request->validate([
             'nama_properti' => 'required|string|max:100',
-            'alamat'        => 'required|string|max:255',
-            'deskripsi'     => 'nullable|string',
-            'status'        => 'required|in:aktif,nonaktif',
+            'alamat' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        // Trait BelongsToClient otomatis menyisipkan client_id saat simpan data
+        $clientId = session('active_client_id')
+            ?? $request->user()?->client_id;
+
+        abort_if(
+            ! $clientId,
+            403,
+            'Client aktif belum ditentukan.'
+        );
+
+        $validated['client_id'] = $clientId;
+
         Property::create($validated);
 
         return redirect()->route('admin.properties.index')
@@ -44,9 +54,9 @@ class PropertyController extends Controller
     {
         $validated = $request->validate([
             'nama_properti' => 'required|string|max:100',
-            'alamat'        => 'required|string|max:255',
-            'deskripsi'     => 'nullable|string',
-            'status'        => 'required|in:aktif,nonaktif',
+            'alamat' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'status' => 'required|in:aktif,nonaktif',
         ]);
 
         $property->update($validated);

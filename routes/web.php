@@ -14,7 +14,7 @@ use App\Http\Controllers\PenghuniDashboardController;
 use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('welcome');
 });
 
 Route::middleware('guest')->group(function () {
