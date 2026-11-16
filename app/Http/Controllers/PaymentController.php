@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
@@ -14,14 +12,21 @@ class PaymentController extends Controller
     {
         $query = Payment::with(['invoice.contract.room.property', 'invoice.contract.user.user']);
 
-        // Fitur pencarian berdasarkan nomor pembayaran atau nama penghuni
-        if ($request->has('search') && $request->search != '') {
+        // Fitur pencarian berdasarkan ID/kode pembayaran atau nama penghuni
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('nomor_pembayaran', 'like', "%{$search}%")
-                ->orWhereHas('invoice.contract.user.user', function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
+            $numericId = preg_replace('/[^0-9]/', '', $search);
+
+            $query->where(function ($q) use ($search, $numericId) {
+                if ($numericId !== '') {
+                    $q->where('id', (int) $numericId);
+                }
+
+                $q->orWhereHas('invoice.contract.user.user', function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
                         ->orWhere('nama', 'like', "%{$search}%");
                 });
+            });
         }
 
         $payments = $query->orderBy('id', 'desc')->get();
@@ -29,19 +34,20 @@ class PaymentController extends Controller
         return view('admin.payments.index', compact('payments'));
     }
 
-        public function receipt(Payment $payment)
+    public function receipt(Payment $payment)
     {
         // Memuat relasi yang dibutuhkan untuk kuitansi
         $payment->load(['invoice.contract.room.property', 'invoice.contract.user.user']);
-        
+
         return view('admin.payments.receipt', compact('payment'));
-    }   
+    }
 
     public function create()
     {
-        // Ambil tagihan yang belum lunas saja untuk dibayarkan
-        $invoices = Invoice::where('status', 'belum_lunas')
+        // Ambil semua tagihan yang statusnya belum lunas
+        $invoices = Invoice::where('status', '!=', 'lunas')
             ->with(['contract.room.property', 'contract.user.user'])
+            ->orderBy('id', 'desc')
             ->get();
 
         return view('admin.payments.create', compact('invoices'));
@@ -58,21 +64,27 @@ class PaymentController extends Controller
             'catatan'           => 'nullable|string|max:500',
         ]);
 
-        $invoice = Invoice::with('contract.room.property')->findOrFail($validated['invoice_id']);
-        $validated['client_id'] = $invoice->contract->room->property->client_id ?? 1;
+        $invoice = Invoice::with('contract')->findOrFail($validated['invoice_id']);
 
-        // Generate nomor pembayaran otomatis
-        $validated['nomor_pembayaran'] = 'PAY-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
-
-        // Handle upload bukti transfer jika ada
+        // Handle upload bukti pembayaran jika ada
+        $buktiPath = null;
         if ($request->hasFile('bukti_transfer')) {
             $file = $request->file('bukti_transfer');
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('uploads/payments'), $filename);
-            $validated['bukti_transfer'] = 'uploads/payments/' . $filename;
+            $buktiPath = 'uploads/payments/' . $filename;
         }
 
-        Payment::create($validated);
+        // Simpan sesuai kolom asli di tabel payments
+        Payment::create([
+            'invoice_id'        => $invoice->id,
+            'client_user_id'    => $invoice->contract->client_user_id,
+            'metode_pembayaran' => $validated['metode_pembayaran'],
+            'jumlah'            => $validated['jumlah_bayar'],
+            'bukti_pembayaran'  => $buktiPath,
+            'status'            => 'diverifikasi',
+            'tanggal_bayar'     => $validated['tanggal_bayar'],
+        ]);
 
         // Update status tagihan menjadi lunas otomatis
         $invoice->update(['status' => 'lunas']);
@@ -83,9 +95,9 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment)
     {
-        // Hapus file bukti transfer jika ada
-        if ($payment->bukti_transfer && file_exists(public_path($payment->bukti_transfer))) {
-            unlink(public_path($payment->bukti_transfer));
+        // Hapus file bukti pembayaran jika ada
+        if ($payment->bukti_pembayaran && file_exists(public_path($payment->bukti_pembayaran))) {
+            unlink(public_path($payment->bukti_pembayaran));
         }
 
         // Kembalikan status tagihan menjadi belum_lunas

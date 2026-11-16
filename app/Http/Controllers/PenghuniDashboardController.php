@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Contract;
 use App\Models\MaintenanceTicket;
 use App\Models\Notification;
+use App\Models\Payment;
 use App\Models\Property;
 use App\Models\Room;
 use App\Traits\ResolvesPenghuni;
@@ -15,17 +16,11 @@ class PenghuniDashboardController extends Controller
 {
     use ResolvesPenghuni;
 
-    /**
-     * Halaman utama: Informasi & Sewa Kost
-     * - menampilkan sewa aktif + riwayat sewa milik penghuni
-     * - menampilkan daftar kamar kost yang tersedia untuk disewa
-     */
     public function index(Request $request)
     {
         $user = Auth::user();
         $clientUser = $this->currentPenghuni();
 
-        // Semua kontrak milik penghuni (riwayat sewa)
         $contracts = Contract::where('client_user_id', $clientUser->id)
             ->with(['room.property', 'room.roomType'])
             ->latest('id')
@@ -33,7 +28,6 @@ class PenghuniDashboardController extends Controller
 
         $activeContract = $contracts->firstWhere('status', 'aktif');
 
-        // Filter properti (opsional)
         $properties = Property::where('status', 'aktif')->orderBy('nama_properti')->get();
 
         $rooms = Room::where('status', 'tersedia')
@@ -59,17 +53,30 @@ class PenghuniDashboardController extends Controller
 
     public function tagihan()
     {
-        return view('penghuni.tagihan', $this->sharedPageData());
+        $shared = $this->sharedPageData();
+        $contract = $shared['contract'];
+        $invoices = $contract ? $contract->invoices : collect();
+
+        return view('penghuni.tagihan', array_merge($shared, [
+            'invoices' => $invoices,
+        ]));
     }
 
     public function pembayaran()
     {
         $shared = $this->sharedPageData();
-        $contract = $shared['contract'];
+        $clientUser = $shared['clientUser'];
 
-        $payments = $contract
-            ? $contract->invoices->flatMap(fn ($invoice) => $invoice->payments)
-            : collect();
+        $payments = Payment::with(['invoice.contract.room.property'])
+            ->where(function ($q) use ($clientUser) {
+                $q->where('client_user_id', $clientUser->id)
+                    ->orWhereHas('invoice.contract', function ($sub) use ($clientUser) {
+                        $sub->where('client_user_id', $clientUser->id);
+                    });
+            })
+            ->latest('tanggal_bayar')
+            ->latest('id')
+            ->get();
 
         return view('penghuni.pembayaran', array_merge($shared, [
             'payments' => $payments,
@@ -107,7 +114,6 @@ class PenghuniDashboardController extends Controller
         ]));
     }
 
-    // Menyimpan keluhan penghuni
     public function store(Request $request)
     {
         $request->validate([

@@ -117,7 +117,7 @@
                             <span class="px-4 py-2 rounded-lg text-sm bg-gray-200 text-gray-500 cursor-not-allowed">Sewa</span>
                         @else
                             <a href="{{ route('penghuni.sewa.create', ['room' => $room->id]) }}"
-                               class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Sewa</a>
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Sewa</a>
                         @endif
                     </div>
                 </div>
