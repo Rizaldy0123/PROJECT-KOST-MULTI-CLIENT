@@ -59,54 +59,52 @@ class PenghuniDashboardController extends Controller
 
     public function tagihan()
     {
-        $user = Auth::user();
-        $clientUser = $this->currentPenghuni();
-
-        $contract = $this->activeContract($clientUser);
-
-        return view('penghuni.tagihan', compact('user', 'contract'));
+        return view('penghuni.tagihan', $this->sharedPageData());
     }
 
     public function pembayaran()
     {
-        $user = Auth::user();
-        $clientUser = $this->currentPenghuni();
-
-        $contract = $this->activeContract($clientUser);
+        $shared = $this->sharedPageData();
+        $contract = $shared['contract'];
 
         $payments = $contract
             ? $contract->invoices->flatMap(fn ($invoice) => $invoice->payments)
             : collect();
 
-        return view('penghuni.pembayaran', compact('user', 'payments'));
+        return view('penghuni.pembayaran', array_merge($shared, [
+            'payments' => $payments,
+        ]));
     }
 
     public function keluhan()
     {
-        $user = Auth::user();
-        $clientUser = $this->currentPenghuni();
-
-        $contract = $this->activeContract($clientUser);
+        $shared = $this->sharedPageData();
+        $clientUser = $shared['clientUser'];
 
         $tickets = MaintenanceTicket::where('client_id', $clientUser->client_id)
             ->where('pelapor_id', $clientUser->id)
             ->latest('tanggal_lapor')
             ->get();
 
-        return view('penghuni.keluhan', compact('user', 'contract', 'tickets'));
+        return view('penghuni.keluhan', array_merge($shared, [
+            'tickets' => $tickets,
+        ]));
     }
 
     public function notifikasi()
     {
-        $user = Auth::user();
-        $clientUser = $this->currentPenghuni();
+        $shared = $this->sharedPageData();
+        $user = $shared['user'];
+        $clientUser = $shared['clientUser'];
 
         $notifications = Notification::where('client_id', $clientUser->client_id)
             ->where('user_id', $user->id)
             ->latest('created_at')
             ->get();
 
-        return view('penghuni.notifikasi', compact('user', 'notifications'));
+        return view('penghuni.notifikasi', array_merge($shared, [
+            'notifications' => $notifications,
+        ]));
     }
 
     // Menyimpan keluhan penghuni
@@ -150,5 +148,29 @@ class PenghuniDashboardController extends Controller
             ->where('status', 'aktif')
             ->latest('id')
             ->first();
+    }
+
+    private function sharedPageData(): array
+    {
+        $user = Auth::user();
+        $clientUser = $this->currentPenghuni();
+        $contract = $this->activeContract($clientUser);
+        $contracts = Contract::where('client_user_id', $clientUser->id)
+            ->with(['room.property', 'room.roomType'])
+            ->latest('id')
+            ->get();
+        $properties = Property::where('status', 'aktif')
+            ->orderBy('nama_properti')
+            ->get();
+
+        return [
+            'user' => $user,
+            'clientUser' => $clientUser,
+            'contract' => $contract,
+            'activeContract' => $contract,
+            'contracts' => $contracts,
+            'properties' => $properties,
+            'rooms' => collect(),
+        ];
     }
 }
