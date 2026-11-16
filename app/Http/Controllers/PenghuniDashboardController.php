@@ -106,12 +106,31 @@ class PenghuniDashboardController extends Controller
 
         $notifications = Notification::where('client_id', $clientUser->client_id)
             ->where('user_id', $user->id)
+            ->orderBy('status_baca', 'asc') // Belum dibaca tampil di atas
             ->latest('created_at')
             ->get();
 
         return view('penghuni.notifikasi', array_merge($shared, [
             'notifications' => $notifications,
         ]));
+    }
+
+    public function bacaNotifikasi($id)
+    {
+        $shared = $this->sharedPageData();
+        $user = $shared['user'];
+        $clientUser = $shared['clientUser'];
+
+        $notification = Notification::where('client_id', $clientUser->client_id)
+            ->where('user_id', $user->id)
+            ->findOrFail($id);
+
+        // Ubah menjadi 1 (atau 'sudah_dibaca' jika kolom bertipe string/enum)
+        $notification->update([
+            'status_baca' => 1,
+        ]);
+
+        return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
     }
 
     public function store(Request $request)

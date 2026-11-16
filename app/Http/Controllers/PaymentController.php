@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Invoice;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -64,7 +65,7 @@ class PaymentController extends Controller
             'catatan'           => 'nullable|string|max:500',
         ]);
 
-        $invoice = Invoice::with('contract')->findOrFail($validated['invoice_id']);
+        $invoice = Invoice::with('contract.user')->findOrFail($validated['invoice_id']);
 
         // Handle upload bukti pembayaran jika ada
         $buktiPath = null;
@@ -88,6 +89,18 @@ class PaymentController extends Controller
 
         // Update status tagihan menjadi lunas otomatis
         $invoice->update(['status' => 'lunas']);
+
+        // Kirim notifikasi konfirmasi pembayaran ke penghuni
+        if ($invoice->contract && $invoice->contract->user && $invoice->contract->user->user_id) {
+            $nominal = number_format($validated['jumlah_bayar'], 0, ',', '.');
+            Notification::create([
+                'client_id'       => $invoice->contract->client_id,
+                'user_id'         => $invoice->contract->user->user_id,
+                'tipe_notifikasi' => 'pembayaran',
+                'pesan'           => "Pembayaran tagihan {$invoice->jenis_tagihan} sebesar Rp {$nominal} telah diverifikasi dan dinyatakan LUNAS.",
+                'status_baca'     => 0,
+            ]);
+        }
 
         return redirect()->route('admin.payments.index')
             ->with('success', 'Pembayaran berhasil dicatat dan tagihan telah dilunasi!');

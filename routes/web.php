@@ -13,6 +13,7 @@ use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\PenghuniDashboardController;
 use App\Http\Controllers\PenghuniSewaController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Admin\NotifikasiController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -33,6 +34,21 @@ Route::middleware('auth')->group(function () {
     // Dashboard Pengelola Kost (Admin Client)
     Route::get('/admin/dashboard', [DashboardController::class, 'adminIndex'])->name('admin.dashboard');
 
+    Route::prefix('admin')->name('admin.')->group(function () {
+
+        // Halaman daftar notifikasi
+        Route::get('/notifikasi', [NotifikasiController::class, 'index'])
+            ->name('notifikasi.index');
+
+        // Halaman form kirim notifikasi
+        Route::get('/notifikasi/create', [NotifikasiController::class, 'create'])
+            ->name('notifikasi.create');
+
+        // Proses mengirim notifikasi
+        Route::post('/notifikasi', [NotifikasiController::class, 'store'])
+            ->name('notifikasi.store');
+    });
+
     // CRUD Properti Kost
     Route::resource('admin/properties', PropertyController::class, [
         'names' => 'admin.properties'
@@ -47,6 +63,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('admin/rooms', RoomController::class, [
         'names' => 'admin.rooms'
     ]);
+    
+    Route::post('/notifikasi/{id}/baca', [PenghuniDashboardController::class, 'bacaNotifikasi'])
+        ->name('penghuni.notifikasi.baca');
 
     // CRUD Kontrak Sewa
     Route::resource('admin/contracts', ContractController::class, [
