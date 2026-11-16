@@ -19,6 +19,7 @@ class Property extends Model
         'alamat',
         'deskripsi',
         'status',
+        'foto',
     ];
 
     public function client(): BelongsTo
