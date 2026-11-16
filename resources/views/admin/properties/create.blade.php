@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -20,34 +21,71 @@
             </div>
         @endif
 
-        <form action="{{ route('admin.properties.store') }}" method="POST" class="space-y-4">
+        <form action="{{ route('admin.properties.store') }}"
+              method="POST"
+              enctype="multipart/form-data"
+              class="space-y-4">
             @csrf
+
             <div>
                 <label class="block text-sm font-medium text-gray-700">Nama Properti / Gedung</label>
-                <input type="text" name="nama_properti" value="{{ old('nama_properti') }}" required class="w-full mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" name="nama_properti"
+                    value="{{ old('nama_properti') }}" required
+                    class="w-full mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Alamat Lengkap</label>
-                <input type="text" name="alamat" value="{{ old('alamat') }}" required class="w-full mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" name="alamat"
+                    value="{{ old('alamat') }}" required
+                    class="w-full mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Deskripsi Properti (Opsional)</label>
-                <textarea name="deskripsi" rows="3" class="w-full mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">{{ old('deskripsi') }}</textarea>
+                <textarea name="deskripsi" rows="3"
+                    class="w-full mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">{{ old('deskripsi') }}</textarea>
+            </div>
+
+            {{-- FOTO PROPERTI --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Foto Kost
+                </label>
+
+                <input type="file"
+                    name="foto"
+                    accept="image/jpeg,image/png,image/webp"
+                    class="w-full mt-1 p-2 border rounded-md bg-white">
+
+                <p class="text-xs text-gray-500 mt-1">
+                    Format JPG, JPEG, PNG, WEBP. Maksimal 2 MB.
+                </p>
+
+                @error('foto')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Status</label>
-                <select name="status" class="w-full mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <select name="status"
+                    class="w-full mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
                     <option value="aktif">Aktif</option>
                     <option value="nonaktif">Nonaktif</option>
                 </select>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-                <a href="{{ route('admin.properties.index') }}" class="px-4 py-2 border text-gray-600 rounded-md hover:bg-gray-50">Batal</a>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Simpan Properti</button>
+                <a href="{{ route('admin.properties.index') }}"
+                    class="px-4 py-2 border text-gray-600 rounded-md hover:bg-gray-50">
+                    Batal
+                </a>
+
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Simpan Properti
+                </button>
             </div>
         </form>
     </div>
