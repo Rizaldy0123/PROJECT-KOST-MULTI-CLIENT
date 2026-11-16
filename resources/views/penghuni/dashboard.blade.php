@@ -1,260 +1,175 @@
+@extends('layouts.penghuni')
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Penghuni - KostWangi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
+@section('title', 'Informasi & Sewa Kost - KostWangi')
 
-    <!-- Navbar -->
-    <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-blue-700">
-                KostWangi
-            </h1>
-
-            <div class="flex items-center gap-4">
-                <span class="text-gray-700">
-                    Halo, {{ $user->nama }}
-                </span>
-
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
-                        Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-6 py-8">
-
-        <!-- Judul -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-800">
-                Dashboard Penghuni
-            </h2>
-            <p class="text-gray-500">
-                Informasi kamar, sewa, tagihan, dan layanan kost Anda.
-            </p>
-        </div>
-
-        <!-- Informasi Sewa -->
-        <section class="bg-white rounded-xl shadow p-6 mb-8">
-            <h3 class="text-lg font-bold mb-4">Informasi Kamar dan Sewa</h3>
-
-            @if($contract && $contract->room)
-                
-<div class="grid grid-cols-1 md:grid-cols-4 gap-5">
-
-    <div>
-        <p class="text-sm text-gray-500">Nomor Kamar</p>
-        <p class="text-xl font-bold">
-            {{ $contract->room->nomor_kamar }}
-        </p>
-    </div>
-
-    <div>
-        <p class="text-sm text-gray-500">Harga Sewa</p>
-        <p class="text-xl font-bold text-blue-600">
-            Rp{{ number_format($contract->room->harga, 0, ',', '.') }}
-        </p>
-    </div>
-
-    <div>
-        <p class="text-sm text-gray-500">Mulai Sewa</p>
-        <p class="font-semibold">{{ $contract->start_date }}</p>
-    </div>
-
-    <div>
-        <p class="text-sm text-gray-500">Akhir Sewa</p>
-        <p class="font-semibold">{{ $contract->end_date }}</p>
-    </div>
-
+@section('content')
+<div class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-800">Informasi & Sewa Kost</h2>
+    <p class="text-gray-500">Lihat kost yang tersedia, sewa kamar, dan kelola sewa Anda.</p>
 </div>
 
-@if($contract->room->roomType)
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
-        <div>
-            <p class="text-sm text-gray-500">Tipe Kamar</p>
-            <p class="font-semibold">
-                {{ $contract->room->roomType->nama_tipe }}
-            </p>
+{{-- ===== SEWA SAYA (aktif) ===== --}}
+<section class="bg-white rounded-xl shadow p-6 mb-8">
+    <h3 class="text-lg font-bold mb-4">Sewa Saya</h3>
+
+    @if($activeContract && $activeContract->room)
+        @php $room = $activeContract->room; @endphp
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div>
+                <p class="text-sm text-gray-500">Kost</p>
+                <p class="font-bold">{{ $room->property->nama_properti ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Nomor Kamar</p>
+                <p class="text-xl font-bold">{{ $room->nomor_kamar }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Harga Sewa / bulan</p>
+                <p class="text-xl font-bold text-blue-600">Rp{{ number_format($room->harga, 0, ',', '.') }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Tipe Kamar</p>
+                <p class="font-semibold">{{ $room->roomType->nama_tipe ?? '-' }}
+                    @if($room->roomType) <span class="text-gray-500 font-normal">({{ $room->roomType->kapasitas }} orang)</span> @endif
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Mulai Sewa</p>
+                <p class="font-semibold">{{ \Illuminate\Support\Carbon::parse($activeContract->start_date)->translatedFormat('d M Y') }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Akhir Sewa</p>
+                <p class="font-semibold">{{ \Illuminate\Support\Carbon::parse($activeContract->end_date)->translatedFormat('d M Y') }}</p>
+            </div>
+            <div class="col-span-2">
+                <p class="text-sm text-gray-500">Alamat</p>
+                <p class="font-semibold">{{ $room->property->alamat ?? '-' }}</p>
+            </div>
         </div>
 
-        <div>
-            <p class="text-sm text-gray-500">Kapasitas</p>
-            <p class="font-semibold">
-                {{ $contract->room->roomType->kapasitas }} orang
-            </p>
-        </div>
+        <div class="flex gap-3 mt-6">
+            <a href="{{ route('penghuni.sewa.edit', $activeContract->id) }}"
+               class="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-yellow-600">Ubah / Perpanjang</a>
 
-        <div>
-            <p class="text-sm text-gray-500">Deskripsi</p>
-            <p class="font-semibold">
-                {{ $contract->room->roomType->deskripsi ?? '-' }}
-            </p>
+            <form action="{{ route('penghuni.sewa.destroy', $activeContract->id) }}" method="POST"
+                  onsubmit="return confirm('Yakin ingin membatalkan sewa kamar ini?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600">Batalkan Sewa</button>
+            </form>
         </div>
+    @else
+        <p class="text-gray-500">Anda belum memiliki sewa aktif. Pilih kamar di bawah untuk mulai menyewa.</p>
+    @endif
+</section>
+
+{{-- ===== KOST TERSEDIA ===== --}}
+<section class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <h3 class="text-lg font-bold">Kost Tersedia</h3>
+
+        <form method="GET" action="{{ route('penghuni.dashboard') }}" class="flex gap-2">
+            <select name="property_id" class="border rounded-lg px-3 py-2 text-sm bg-white" onchange="this.form.submit()">
+                <option value="">Semua Kost</option>
+                @foreach($properties as $property)
+                    <option value="{{ $property->id }}" @selected(request('property_id') == $property->id)>
+                        {{ $property->nama_properti }}
+                    </option>
+                @endforeach
+            </select>
+            @if(request('property_id'))
+                <a href="{{ route('penghuni.dashboard') }}" class="px-3 py-2 text-sm text-gray-600 hover:underline">Reset</a>
+            @endif
+        </form>
     </div>
-@endif
 
-            @else
-                <p class="text-gray-500">Belum ada kontrak aktif.</p>
-            @endif
-        </section>
+    @if($activeContract)
+        <div class="bg-blue-50 text-blue-700 text-sm px-4 py-3 rounded-lg mb-4">
+            Anda sudah memiliki sewa aktif. Batalkan sewa saat ini jika ingin menyewa kamar lain.
+        </div>
+    @endif
 
-        <!-- Tagihan -->
-        <section class="bg-white rounded-xl shadow p-6 mb-8">
-            <h3 class="text-lg font-bold mb-4">Tagihan Saya</h3>
-
-            @if($contract && $contract->invoices->count())
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="p-3">Jenis Tagihan</th>
-                                <th class="p-3">Jumlah</th>
-                                <th class="p-3">Jatuh Tempo</th>
-                                <th class="p-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($contract->invoices as $invoice)
-                                <tr class="border-b">
-                                    <td class="p-3">{{ $invoice->jenis_tagihan }}</td>
-                                    <td class="p-3">
-                                        Rp{{ number_format($invoice->jumlah, 0, ',', '.') }}
-                                    </td>
-                                    <td class="p-3">{{ $invoice->tanggal_jatuh_tempo }}</td>
-                                    <td class="p-3">
-                                        {{ ucfirst($invoice->status) }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        @forelse($rooms as $room)
+            <div class="bg-white rounded-xl shadow overflow-hidden flex flex-col">
+                <div class="h-36 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-bold text-3xl">
+                    {{ $room->nomor_kamar }}
                 </div>
-            @else
-                <p class="text-gray-500">Belum ada tagihan.</p>
-            @endif
-        </section>
+                <div class="p-5 flex-1 flex flex-col">
+                    <p class="text-xs uppercase tracking-wide text-gray-400">{{ $room->property->nama_properti ?? '-' }}</p>
+                    <h4 class="text-lg font-bold mb-1">Kamar {{ $room->nomor_kamar }}
+                        <span class="text-sm font-normal text-gray-500">· {{ $room->roomType->nama_tipe ?? '-' }}</span>
+                    </h4>
+                    <p class="text-sm text-gray-500 mb-2">{{ $room->property->alamat ?? '' }}</p>
+                    @if($room->roomType)
+                        <p class="text-sm text-gray-600 mb-2">Kapasitas {{ $room->roomType->kapasitas }} orang</p>
+                        @if($room->roomType->deskripsi)
+                            <p class="text-sm text-gray-500 mb-3">{{ \Illuminate\Support\Str::limit($room->roomType->deskripsi, 90) }}</p>
+                        @endif
+                    @endif
 
-        <!-- Riwayat Pembayaran -->
-        <section class="bg-white rounded-xl shadow p-6 mb-8">
-            <h3 class="text-lg font-bold mb-4">Riwayat Pembayaran</h3>
+                    <div class="mt-auto flex items-center justify-between pt-3">
+                        <p class="text-lg font-bold text-blue-600">
+                            Rp{{ number_format($room->harga, 0, ',', '.') }}<span class="text-xs text-gray-500 font-normal">/bln</span>
+                        </p>
 
-            @forelse($payments as $payment)
-                <div class="border-b py-3 flex justify-between gap-4">
-                    <div>
-                        <p class="font-semibold">
-                            {{ $payment->nomor_pembayaran }}
-                        </p>
-                        <p class="text-sm text-gray-500">
-                            {{ $payment->tanggal_bayar }}
-                        </p>
+                        @if($activeContract)
+                            <span class="px-4 py-2 rounded-lg text-sm bg-gray-200 text-gray-500 cursor-not-allowed">Sewa</span>
+                        @else
+                            <a href="{{ route('penghuni.sewa.create', ['room' => $room->id]) }}"
+                               class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Sewa</a>
+                        @endif
                     </div>
-                    <p class="font-semibold text-green-600">
-                        Rp{{ number_format($payment->jumlah_bayar, 0, ',', '.') }}
-                    </p>
                 </div>
-            @empty
-                <p class="text-gray-500">Belum ada riwayat pembayaran.</p>
-            @endforelse
-        </section>
-
-        <!-- Keluhan -->
-        <section class="bg-white rounded-xl shadow p-6 mb-8">
-            <h3 class="text-lg font-bold mb-4">Keluhan dan Pemeliharaan</h3>
-
-@if(session('success'))
-    <div class="bg-green-100 text-green-700 p-3 rounded-lg mb-4">
-        {{ session('success') }}
+            </div>
+        @empty
+            <div class="col-span-full bg-white rounded-xl shadow p-8 text-center text-gray-500">
+                Belum ada kamar yang tersedia saat ini.
+            </div>
+        @endforelse
     </div>
-@endif
+</section>
 
-@if($errors->any())
-    <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
-        <ul class="list-disc pl-5">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+{{-- ===== RIWAYAT SEWA ===== --}}
+<section class="bg-white rounded-xl shadow p-6">
+    <h3 class="text-lg font-bold mb-4">Riwayat Sewa</h3>
 
-<form action="{{ route('penghuni.keluhan.store') }}"
-      method="POST"
-      class="bg-gray-50 p-4 rounded-lg mb-6">
-
-    @csrf
-
-    <h4 class="font-semibold mb-3">Buat Laporan Keluhan</h4>
-
-    <label class="block text-sm font-medium mb-1">
-        Judul Keluhan
-    </label>
-    <input
-        type="text"
-        name="judul"
-        maxlength="100"
-        value="{{ old('judul') }}"
-        placeholder="Contoh: Lampu kamar mati"
-        class="w-full border rounded-lg p-3 mb-3"
-        required
-    >
-
-    <label class="block text-sm font-medium mb-1">
-        Deskripsi Keluhan
-    </label>
-    <textarea
-        name="deskripsi"
-        maxlength="500"
-        rows="4"
-        placeholder="Jelaskan kerusakan atau keluhan Anda..."
-        class="w-full border rounded-lg p-3 mb-3"
-        required
-    >{{ old('deskripsi') }}</textarea>
-
-    <button
-        type="submit"
-        class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700">
-        Kirim Keluhan
-    </button>
-</form>
-
-            @forelse($tickets as $ticket)
-                <div class="border-b py-3">
-                    <p class="font-semibold">{{ $ticket->judul }}</p>
-                    <p class="text-sm text-gray-500">{{ $ticket->deskripsi }}</p>
-                    <p class="text-sm mt-1">
-                        Status: {{ ucfirst($ticket->status) }}
-                    </p>
-                </div>
-            @empty
-                <p class="text-gray-500">Belum ada keluhan yang dilaporkan.</p>
-            @endforelse
-        </section>
-
-        <!-- Notifikasi -->
-        <section class="bg-white rounded-xl shadow p-6 mb-8">
-            <h3 class="text-lg font-bold mb-4">Notifikasi</h3>
-
-            @forelse($notifications as $notification)
-                <div class="border-b py-3">
-                    <p>{{ $notification->pesan }}</p>
-                    <p class="text-sm text-gray-500">
-                        {{ $notification->tipe_notifikasi }}
-                    </p>
-                </div>
-            @empty
-                <p class="text-gray-500">Belum ada notifikasi.</p>
-            @endforelse
-        </section>
-
-    </main>
-</body>
-</html>
+    @if($contracts->count())
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-3">Kost</th>
+                        <th class="p-3">Kamar</th>
+                        <th class="p-3">Mulai</th>
+                        <th class="p-3">Berakhir</th>
+                        <th class="p-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($contracts as $contract)
+                        <tr class="border-b">
+                            <td class="p-3">{{ $contract->room->property->nama_properti ?? '-' }}</td>
+                            <td class="p-3">{{ $contract->room->nomor_kamar ?? '-' }}</td>
+                            <td class="p-3">{{ \Illuminate\Support\Carbon::parse($contract->start_date)->translatedFormat('d M Y') }}</td>
+                            <td class="p-3">{{ \Illuminate\Support\Carbon::parse($contract->end_date)->translatedFormat('d M Y') }}</td>
+                            <td class="p-3">
+                                @php
+                                    $badge = match($contract->status) {
+                                        'aktif' => 'bg-green-100 text-green-800',
+                                        'selesai' => 'bg-gray-100 text-gray-700',
+                                        default => 'bg-red-100 text-red-700',
+                                    };
+                                @endphp
+                                <span class="px-2 py-1 text-xs font-semibold rounded {{ $badge }}">{{ ucfirst($contract->status) }}</span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <p class="text-gray-500">Belum ada riwayat sewa.</p>
+    @endif
+</section>
+@endsection

@@ -11,6 +11,7 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\PenghuniDashboardController;
+use App\Http\Controllers\PenghuniSewaController;
 use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
@@ -72,13 +73,23 @@ Route::middleware('auth')->group(function () {
         'maintenance' => 'maintenance'
     ]);
 
-    // Dashboard Penghuni
+    // ===== Area Penghuni (sidebar) =====
+    // Halaman utama: Informasi & Sewa Kost
     Route::get('/penghuni/dashboard', [PenghuniDashboardController::class, 'index'])
-    ->name('penghuni.dashboard');
-    
-    // Pengajuan Keluhan Penghuni
-    Route::post('/penghuni/keluhan', [PenghuniDashboardController::class, 'store'])
-    ->name('penghuni.keluhan.store');
+        ->name('penghuni.dashboard');
+
+    // CRUD Sewa Kost oleh penghuni
+    Route::resource('penghuni/sewa', PenghuniSewaController::class, [
+        'names' => 'penghuni.sewa',
+    ])->parameters(['sewa' => 'contract'])
+        ->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+    // Menu sidebar lainnya
+    Route::get('/penghuni/tagihan', [PenghuniDashboardController::class, 'tagihan'])->name('penghuni.tagihan');
+    Route::get('/penghuni/pembayaran', [PenghuniDashboardController::class, 'pembayaran'])->name('penghuni.pembayaran');
+    Route::get('/penghuni/keluhan', [PenghuniDashboardController::class, 'keluhan'])->name('penghuni.keluhan');
+    Route::post('/penghuni/keluhan', [PenghuniDashboardController::class, 'store'])->name('penghuni.keluhan.store');
+    Route::get('/penghuni/notifikasi', [PenghuniDashboardController::class, 'notifikasi'])->name('penghuni.notifikasi');
 
     // Mengarahkan /dashboard utama ke DashboardController
     Route::get('/dashboard', [DashboardController::class, 'adminIndex'])->name('dashboard');

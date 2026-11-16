@@ -2,56 +2,111 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Contract;
 use App\Models\MaintenanceTicket;
-use App\Models\ClientUser;
 use App\Models\Notification;
-use App\Models\User; // <-- Ditambahkan untuk menghindari error/peringatan garis merah di VS Code
+use App\Models\Property;
+use App\Models\Room;
+use App\Traits\ResolvesPenghuni;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PenghuniDashboardController extends Controller
 {
-    public function index()
+    use ResolvesPenghuni;
+
+    /**
+     * Halaman utama: Informasi & Sewa Kost
+     * - menampilkan sewa aktif + riwayat sewa milik penghuni
+     * - menampilkan daftar kamar kost yang tersedia untuk disewa
+     */
+    public function index(Request $request)
     {
-        // Mengambil akun penghuni yang sedang login
-        $user = auth()->user();
+        $user = Auth::user();
+        $clientUser = $this->currentPenghuni();
 
-        $clientUser = ClientUser::where('user_id', $user->id)
-            ->where('role', 'penghuni')
-            ->where('is_active', 1)
-            ->firstOrFail();
-
-        // Mengambil kontrak dan informasi kamar milik penghuni
-        $contract = $clientUser->contracts()
-            ->with(['room.roomType', 'invoices.payments'])
-            ->where('status', 'aktif')
+        // Semua kontrak milik penghuni (riwayat sewa)
+        $contracts = Contract::where('client_user_id', $clientUser->id)
+            ->with(['room.property', 'room.roomType'])
             ->latest('id')
-            ->first();
+            ->get();
 
-        // Mengambil riwayat keluhan milik penghuni
+        $activeContract = $contracts->firstWhere('status', 'aktif');
+
+        // Filter properti (opsional)
+        $properties = Property::where('status', 'aktif')->orderBy('nama_properti')->get();
+
+        $rooms = Room::where('status', 'tersedia')
+            ->whereHas('property', function ($q) use ($request) {
+                $q->where('status', 'aktif');
+                if ($request->filled('property_id')) {
+                    $q->where('id', $request->property_id);
+                }
+            })
+            ->with(['property', 'roomType'])
+            ->orderBy('harga')
+            ->get();
+
+        return view('penghuni.dashboard', compact(
+            'user',
+            'clientUser',
+            'contracts',
+            'activeContract',
+            'properties',
+            'rooms'
+        ));
+    }
+
+    public function tagihan()
+    {
+        $user = Auth::user();
+        $clientUser = $this->currentPenghuni();
+
+        $contract = $this->activeContract($clientUser);
+
+        return view('penghuni.tagihan', compact('user', 'contract'));
+    }
+
+    public function pembayaran()
+    {
+        $user = Auth::user();
+        $clientUser = $this->currentPenghuni();
+
+        $contract = $this->activeContract($clientUser);
+
+        $payments = $contract
+            ? $contract->invoices->flatMap(fn ($invoice) => $invoice->payments)
+            : collect();
+
+        return view('penghuni.pembayaran', compact('user', 'payments'));
+    }
+
+    public function keluhan()
+    {
+        $user = Auth::user();
+        $clientUser = $this->currentPenghuni();
+
+        $contract = $this->activeContract($clientUser);
+
         $tickets = MaintenanceTicket::where('client_id', $clientUser->client_id)
             ->where('pelapor_id', $clientUser->id)
             ->latest('tanggal_lapor')
             ->get();
 
-        // Mengambil notifikasi milik penghuni
+        return view('penghuni.keluhan', compact('user', 'contract', 'tickets'));
+    }
+
+    public function notifikasi()
+    {
+        $user = Auth::user();
+        $clientUser = $this->currentPenghuni();
+
         $notifications = Notification::where('client_id', $clientUser->client_id)
             ->where('user_id', $user->id)
             ->latest('created_at')
             ->get();
 
-        // Mengambil riwayat pembayaran dari invoice kontrak
-        $payments = $contract
-            ? $contract->invoices->flatMap(fn ($invoice) => $invoice->payments)
-            : collect();
-
-        return view('penghuni.dashboard', compact(
-            'user',
-            'clientUser',
-            'contract',
-            'tickets',
-            'notifications',
-            'payments'
-        ));
+        return view('penghuni.notifikasi', compact('user', 'notifications'));
     }
 
     // Menyimpan keluhan penghuni
@@ -62,16 +117,17 @@ class PenghuniDashboardController extends Controller
             'deskripsi' => 'required|string|max:500',
         ]);
 
-        $user = auth()->user();
-
-        $clientUser = ClientUser::where('user_id', $user->id)
-            ->where('role', 'penghuni')
-            ->where('is_active', 1)
-            ->firstOrFail();
+        $clientUser = $this->currentPenghuni();
 
         $contract = $clientUser->contracts()
             ->where('status', 'aktif')
-            ->firstOrFail();
+            ->first();
+
+        if (! $contract) {
+            return redirect()
+                ->route('penghuni.keluhan')
+                ->with('error', 'Anda belum memiliki sewa aktif, sehingga belum bisa mengajukan keluhan.');
+        }
 
         MaintenanceTicket::create([
             'client_id' => $clientUser->client_id,
@@ -83,7 +139,16 @@ class PenghuniDashboardController extends Controller
         ]);
 
         return redirect()
-            ->route('penghuni.dashboard')
+            ->route('penghuni.keluhan')
             ->with('success', 'Keluhan berhasil diajukan!');
+    }
+
+    private function activeContract($clientUser): ?Contract
+    {
+        return $clientUser->contracts()
+            ->with(['room.roomType', 'invoices.payments'])
+            ->where('status', 'aktif')
+            ->latest('id')
+            ->first();
     }
 }
