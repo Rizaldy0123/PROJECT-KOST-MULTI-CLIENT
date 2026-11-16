@@ -114,14 +114,6 @@
                         <p class="text-xs uppercase tracking-wide text-gray-400">
                             {{ $room->property->nama_properti ?? '-' }}
                         </p>
-<<<<<<< HEAD
-
-                        @if($activeContract)
-                            <span class="px-4 py-2 rounded-lg text-sm bg-gray-200 text-gray-500 cursor-not-allowed">Sewa</span>
-                        @else
-                            <a href="{{ route('penghuni.sewa.create', ['room' => $room->id]) }}"
-                            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Sewa</a>
-=======
                         <h4 class="text-lg font-bold mb-1">Kamar {{ $room->nomor_kamar }}
                             <span class="text-sm font-normal text-gray-500">·
                                 {{ $room->roomType->nama_tipe ?? '-' }}</span>
@@ -136,7 +128,6 @@
                                     {{ \Illuminate\Support\Str::limit($room->roomType->deskripsi, 90) }}
                                 </p>
                             @endif
->>>>>>> bd9d9e10e2488d6101b6646325d05831d4830a58
                         @endif
 
                         <div class="mt-auto flex items-center justify-between pt-3">
