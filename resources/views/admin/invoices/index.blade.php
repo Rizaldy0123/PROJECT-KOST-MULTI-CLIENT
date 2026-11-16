@@ -29,7 +29,7 @@
             @forelse($invoices as $invoice)
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-4">
-                        <span class="font-bold text-gray-800">{{ $invoice->contract->user->name ?? '-' }}</span><br>
+                        <span class="font-bold text-gray-800">{{ $invoice->contract?->user?->user?->name ?? $invoice->contract?->user?->user?->nama ?? '-' }}</span><br>
                         <span class="text-xs text-gray-400">Kamar {{ $invoice->contract->room->nomor_kamar ?? '-' }} - {{ $invoice->contract->room->property->nama_properti ?? '-' }}</span>
                     </td>
                     <td class="p-4 uppercase font-medium text-gray-700">{{ $invoice->jenis_tagihan }}</td>
