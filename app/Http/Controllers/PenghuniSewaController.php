@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contract;
+use App\Models\Invoice;
+use App\Models\Notification;
 use App\Models\Room;
 use App\Traits\ResolvesPenghuni;
 use Illuminate\Http\Request;
@@ -10,6 +12,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @method \App\Models\ClientUser currentPenghuni()
+ */
 class PenghuniSewaController extends Controller
 {
     use ResolvesPenghuni;
@@ -56,10 +61,11 @@ class PenghuniSewaController extends Controller
                 ->with('error', 'Anda masih memiliki sewa aktif.');
         }
 
-        $start = Carbon::parse($validated['start_date']);
-        $end   = $start->copy()->addMonths((int) $validated['durasi_bulan']);
+        $durasi = (int) $validated['durasi_bulan'];
+        $start  = Carbon::parse($validated['start_date']);
+        $end    = $start->copy()->addMonths($durasi);
 
-        $result = DB::transaction(function () use ($validated, $clientUser, $start, $end) {
+        $result = DB::transaction(function () use ($validated, $clientUser, $start, $end, $durasi) {
             // Kunci baris kamar supaya tidak terjadi double booking
             $room = Room::whereHas('property', fn ($q) => $q->where('status', 'aktif'))
                 ->where('status', 'tersedia')
@@ -70,7 +76,7 @@ class PenghuniSewaController extends Controller
                 return false;
             }
 
-            Contract::create([
+            $contract = Contract::create([
                 'room_id'        => $room->id,
                 'client_id'      => $room->property->client_id,
                 'client_user_id' => $clientUser->id,
@@ -78,6 +84,28 @@ class PenghuniSewaController extends Controller
                 'end_date'       => $end->toDateString(),
                 'status'         => 'aktif',
             ]);
+
+            // Buat tagihan awal otomatis sesuai durasi sewa
+            $invoice = Invoice::create([
+                'client_id'           => $room->property->client_id,
+                'room_assignment_id'  => $contract->id,
+                'jenis_tagihan'       => 'sewa',
+                'jumlah'              => $room->harga * $durasi,
+                'tanggal_jatuh_tempo' => $start->copy()->addDays(7)->toDateString(),
+                'status'              => 'belum_bayar',
+            ]);
+
+            // Kirim notifikasi tagihan otomatis ke penghuni
+            if ($clientUser->user_id) {
+                $nominal = number_format($invoice->jumlah, 0, ',', '.');
+                Notification::create([
+                    'client_id'       => $room->property->client_id,
+                    'user_id'         => $clientUser->user_id,
+                    'tipe_notifikasi' => 'tagihan',
+                    'pesan'           => "Tagihan sewa kamar sebesar Rp {$nominal} telah diterbitkan. Jatuh tempo: {$invoice->tanggal_jatuh_tempo}.",
+                    'status_baca'     => 0,
+                ]);
+            }
 
             $room->update(['status' => 'terisi']);
 
@@ -89,8 +117,8 @@ class PenghuniSewaController extends Controller
                 ->with('error', 'Maaf, kamar tersebut baru saja disewa orang lain atau sudah tidak tersedia.');
         }
 
-        return redirect()->route('penghuni.dashboard')
-            ->with('success', 'Kamar berhasil disewa!');
+        return redirect()->route('penghuni.tagihan')
+            ->with('success', 'Kamar berhasil disewa! Silakan cek rincian tagihan Anda di bawah ini.');
     }
 
     // FORM UBAH SEWA (Update)

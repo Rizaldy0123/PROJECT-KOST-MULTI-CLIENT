@@ -7,6 +7,18 @@
         <p class="text-sm text-gray-500 mt-1">Daftar rincian tagihan sewa kamar dan jatuh tempo pembayaran.</p>
     </div>
 
+    @if (session('success'))
+        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 text-sm">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="bg-white rounded-xl border border-gray-200 p-6">
         @php
             $daftarTagihan = $invoices ?? ($contract ? $contract->invoices : collect());
@@ -43,6 +55,10 @@
                                     @elseif($invoice->status === 'terlambat')
                                         <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
                                             Terlambat
+                                        </span>
+                                    @elseif($invoice->status === 'dibatalkan')
+                                        <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                            Dibatalkan
                                         </span>
                                     @else
                                         <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany; // Tambahkan import ini
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
@@ -12,7 +12,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'client_id',
-        'room_assignment_id', // Foreign key ke tabel contracts
+        'room_assignment_id',
         'jenis_tagihan',
         'jumlah',
         'tanggal_jatuh_tempo',
@@ -21,7 +21,6 @@ class Invoice extends Model
 
     public function contract(): BelongsTo
     {
-        // Tentukan foreign key 'room_assignment_id' secara eksplisit
         return $this->belongsTo(Contract::class, 'room_assignment_id');
     }
 
