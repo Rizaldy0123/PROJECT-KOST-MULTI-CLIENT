@@ -33,6 +33,7 @@
                             <th class="py-3 px-4">Jumlah</th>
                             <th class="py-3 px-4">Jatuh Tempo</th>
                             <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y text-sm">
@@ -64,6 +65,18 @@
                                         <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">
                                             Belum Lunas
                                         </span>
+                                    @endif
+                                </td>
+                                <td class="py-3 px-4 text-right">
+                                    @if(in_array($invoice->status, ['belum_bayar', 'terlambat']))
+                                        <a href="{{ route('penghuni.tagihan.bayar', $invoice->id) }}"
+                                            class="inline-flex items-center px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
+                                            Bayar Sekarang
+                                        </a>
+                                    @elseif($invoice->status === 'lunas')
+                                        <span class="text-xs text-green-600 font-medium">Sudah Dibayar</span>
+                                    @else
+                                        <span class="text-xs text-gray-400">-</span>
                                     @endif
                                 </td>
                             </tr>

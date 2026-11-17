@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController; // Tambahkan import RegisterController
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\RoomTypeController;
@@ -12,6 +12,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\PenghuniDashboardController;
 use App\Http\Controllers\PenghuniSewaController;
+use App\Http\Controllers\PenghuniPembayaranController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\NotifikasiController;
 
@@ -23,7 +24,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 
-    // --- RUTE REGISTRASI (Ditambahkan di sini agar bisa diakses saat belum login) ---
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
 });
@@ -35,7 +35,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'adminIndex'])->name('admin.dashboard');
 
     Route::prefix('admin')->name('admin.')->group(function () {
-
         // Halaman daftar notifikasi
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])
             ->name('notifikasi.index');
@@ -63,7 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('admin/rooms', RoomController::class, [
         'names' => 'admin.rooms'
     ]);
-    
+
     Route::post('/notifikasi/{id}/baca', [PenghuniDashboardController::class, 'bacaNotifikasi'])
         ->name('penghuni.notifikasi.baca');
 
@@ -105,6 +104,8 @@ Route::middleware('auth')->group(function () {
 
     // Menu sidebar lainnya
     Route::get('/penghuni/tagihan', [PenghuniDashboardController::class, 'tagihan'])->name('penghuni.tagihan');
+    Route::get('/penghuni/tagihan/{invoice}/bayar', [PenghuniPembayaranController::class, 'create'])->name('penghuni.tagihan.bayar');
+    Route::post('/penghuni/tagihan/{invoice}/bayar', [PenghuniPembayaranController::class, 'store'])->name('penghuni.tagihan.bayar.store');
     Route::get('/penghuni/pembayaran', [PenghuniDashboardController::class, 'pembayaran'])->name('penghuni.pembayaran');
     Route::get('/penghuni/keluhan', [PenghuniDashboardController::class, 'keluhan'])->name('penghuni.keluhan');
     Route::post('/penghuni/keluhan', [PenghuniDashboardController::class, 'store'])->name('penghuni.keluhan.store');
